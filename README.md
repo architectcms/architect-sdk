@@ -62,12 +62,60 @@ const preview = new ArchitectPreview({
 const drafts = await preview.entries.model('blog-post').fetch();
 ```
 
-**Key type validation:** `ArchitectDelivery` only accepts `arch_delivery_` keys and `ArchitectPreview` only accepts `arch_preview_` keys. Using the wrong key type throws a descriptive error.
+**Key type validation:** Each client only accepts its matching key prefix. Using the wrong key type throws a descriptive error.
 
-| Client | Key Prefix | Sees Published | Sees Drafts |
-|--------|-----------|---------------|-------------|
-| `ArchitectDelivery` | `arch_delivery_` | Yes | No |
-| `ArchitectPreview` | `arch_preview_` | Yes | Yes |
+| Client | Key Prefix | Reads | Writes | Sees Drafts |
+|--------|-----------|-------|--------|-------------|
+| `ArchitectDelivery` | `arch_delivery_` | Yes | No | No |
+| `ArchitectPreview` | `arch_preview_` | Yes | No | Yes |
+| `ArchitectManagement` | `arch_mgmt_` | Yes | Yes | Yes |
+
+## Management Mode
+
+Use `ArchitectManagement` with a management API key for full CRUD operations:
+
+```typescript
+import { ArchitectManagement } from '@architect-cms/delivery';
+
+const client = new ArchitectManagement({
+  apiKey: 'arch_mgmt_...',
+  organizationId: 'org_123',
+  environmentId: 'env_prod',
+  baseUrl: 'https://api.yoursite.com',
+});
+
+// Entries
+const entry = await client.entries.create('blog-post', { title: 'Hello World' });
+await client.entries.update(entry.id, { title: 'Updated' });
+await client.entries.publish(entry.id);
+await client.entries.delete(entry.id);
+
+// Relationships
+await client.entries.addRelation(entry.id, 'author', authorEntryId);
+await client.entries.removeRelation(entry.id, 'author', authorEntryId);
+
+// Models
+const model = await client.models.create({ name: 'product', fields: [...] });
+await client.models.addField(model.id, { name: 'price', type: 'number' });
+await client.models.updateField(model.id, 'price', { required: true });
+await client.models.deleteField(model.id, 'price');
+await client.models.delete(model.id);
+
+// Assets
+const asset = await client.assets.upload(buffer, {
+  filename: 'hero.jpg',
+  mimeType: 'image/jpeg',
+  title: 'Hero Image',
+});
+await client.assets.update(asset.id, { title: 'Updated', tags: ['hero'] });
+await client.assets.delete(asset.id);
+
+// Context Providers
+const contexts = await client.contexts.list();
+await client.contexts.create({ name: 'Region', sourceModelId: 'model_1' });
+await client.contexts.update(ctx.id, { name: 'Updated' });
+await client.contexts.delete(ctx.id);
+```
 
 ## Website Preview Integration
 

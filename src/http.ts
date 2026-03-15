@@ -29,38 +29,70 @@ export class HttpClient {
       const searchParams = new URLSearchParams(params)
       url += `?${searchParams.toString()}`
     }
-    return this.request<T>(url)
+    return this.request<T>(url, 'GET')
   }
 
-  private async request<T>(url: string, attempt = 0): Promise<T> {
+  async post<T>(path: string, body: unknown): Promise<T> {
+    const url = `${this.baseUrl}${path}`
+    return this.request<T>(url, 'POST', JSON.stringify(body))
+  }
+
+  async put<T>(path: string, body: unknown): Promise<T> {
+    const url = `${this.baseUrl}${path}`
+    return this.request<T>(url, 'PUT', JSON.stringify(body))
+  }
+
+  async del<T>(path: string): Promise<T> {
+    const url = `${this.baseUrl}${path}`
+    return this.request<T>(url, 'DELETE')
+  }
+
+  async postFormData<T>(path: string, formData: FormData): Promise<T> {
+    const url = `${this.baseUrl}${path}`
+    const { 'Content-Type': _, ...headersWithoutContentType } = this.headers
+    return this.request<T>(url, 'POST', formData, headersWithoutContentType)
+  }
+
+  private async request<T>(
+    url: string,
+    method: string,
+    body?: string | FormData,
+    headersOverride?: Record<string, string>,
+    attempt = 0
+  ): Promise<T> {
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), this.timeout)
 
     try {
       const response = await fetch(url, {
-        method: 'GET',
-        headers: this.headers,
+        method,
+        headers: headersOverride || this.headers,
+        body,
         signal: controller.signal,
       })
 
       clearTimeout(timeoutId)
 
       if (!response.ok) {
-        const body = await response.json().catch(() => ({}))
+        const responseBody = await response.json().catch(() => ({}))
         const error = new ArchitectError(
-          body.error || `Request failed with status ${response.status}`,
+          responseBody.error || `Request failed with status ${response.status}`,
           response.status,
-          body.code || 'UNKNOWN_ERROR',
-          body.requestId
+          responseBody.code || 'UNKNOWN_ERROR',
+          responseBody.requestId
         )
 
         // Only retry on 5xx
         if (response.status >= 500 && attempt < this.retries) {
           await this.delay(RETRY_BASE_DELAY * Math.pow(2, attempt))
-          return this.request<T>(url, attempt + 1)
+          return this.request<T>(url, method, body, headersOverride, attempt + 1)
         }
 
         throw error
+      }
+
+      if (response.status === 204) {
+        return {} as T
       }
 
       return response.json() as Promise<T>
@@ -76,7 +108,7 @@ export class HttpClient {
       // Retry on network errors
       if (attempt < this.retries) {
         await this.delay(RETRY_BASE_DELAY * Math.pow(2, attempt))
-        return this.request<T>(url, attempt + 1)
+        return this.request<T>(url, method, body, headersOverride, attempt + 1)
       }
 
       throw error

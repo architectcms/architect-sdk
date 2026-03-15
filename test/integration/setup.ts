@@ -1,5 +1,6 @@
 import { ArchitectDelivery } from '../../src/client'
 import { ArchitectPreview } from '../../src/preview'
+import { ArchitectManagement } from '../../src/management'
 
 const BASE_URL = process.env.ARCHITECT_TEST_BASE_URL || 'http://localhost:3000'
 const ADMIN_USER = process.env.ARCHITECT_TEST_USERNAME || 'admin'
@@ -8,8 +9,10 @@ const ADMIN_PASS = process.env.ARCHITECT_TEST_PASSWORD || process.env.ADMIN_PASS
 export interface TestContext {
   client: ArchitectDelivery
   previewClient: ArchitectPreview
+  managementClient: ArchitectManagement
   apiKey: string
   previewApiKey: string
+  managementApiKey: string
   organizationId: string
   environmentId: string
   baseUrl: string
@@ -106,6 +109,24 @@ export async function setupTestContext(): Promise<TestContext> {
   }
   const previewApiKey = previewKeyBody.fullKey
 
+  // 4c. Create a management API key for this org/env
+  const { status: mgmtKeyStatus, body: mgmtKeyBody } = await fetchJson(`${BASE_URL}/api/api-keys`, {
+    method: 'POST',
+    headers: { ...fullScopedHeaders, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: uniqueName('sdk_mgmt_key'), type: 'management' }),
+  })
+  if (mgmtKeyStatus !== 201) {
+    throw new Error(`Failed to create management API key: ${mgmtKeyStatus} ${JSON.stringify(mgmtKeyBody)}`)
+  }
+  const managementApiKey = mgmtKeyBody.fullKey
+
+  const managementClient = new ArchitectManagement({
+    apiKey: managementApiKey,
+    organizationId,
+    environmentId,
+    baseUrl: BASE_URL,
+  })
+
   // 5. Seed test data: model with string, number, boolean fields
   const testModelName = uniqueName('sdk_test_model')
   const { status: modelStatus, body: modelBody } = await fetchJson(`${BASE_URL}/api/models`, {
@@ -183,8 +204,10 @@ export async function setupTestContext(): Promise<TestContext> {
   return {
     client,
     previewClient,
+    managementClient,
     apiKey,
     previewApiKey,
+    managementApiKey,
     organizationId,
     environmentId,
     baseUrl: BASE_URL,
