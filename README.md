@@ -1,0 +1,167 @@
+# @architect-cms/delivery
+
+TypeScript SDK for consuming published content from [Architect CMS](https://github.com/your-org/architect).
+
+## Installation
+
+```bash
+npm install @architect-cms/delivery
+```
+
+## Quick Start
+
+```typescript
+import { ArchitectDelivery } from '@architect-cms/delivery';
+
+const client = new ArchitectDelivery({
+  apiKey: 'arch_delivery_...',
+  organizationId: 'org_123',
+  environmentId: 'env_prod',
+  baseUrl: 'https://api.yoursite.com',
+});
+
+// Fetch entries
+const posts = await client.entries.model('blog-post').fetch();
+
+// Filter entries
+const featured = await client.entries
+  .model('blog-post')
+  .where('category', 'technology')
+  .where('featured', true)
+  .limit(10)
+  .fetch();
+
+// Get a single entry
+const post = await client.entries.get('entry_123');
+
+// List models
+const models = await client.models.list();
+
+// Get asset image URL with transforms
+const imageUrl = client.assets.imageUrl('asset_123', {
+  width: 800,
+  format: 'webp',
+});
+```
+
+## Preview Mode
+
+Use `ArchitectPreview` with a preview API key to access draft/unpublished entries:
+
+```typescript
+import { ArchitectPreview } from '@architect-cms/delivery';
+
+const preview = new ArchitectPreview({
+  apiKey: 'arch_preview_...',    // preview key (not delivery)
+  organizationId: 'org_123',
+  environmentId: 'env_prod',
+  baseUrl: 'https://api.yoursite.com',
+});
+
+// Returns ALL entries including unpublished drafts
+const drafts = await preview.entries.model('blog-post').fetch();
+```
+
+**Key type validation:** `ArchitectDelivery` only accepts `arch_delivery_` keys and `ArchitectPreview` only accepts `arch_preview_` keys. Using the wrong key type throws a descriptive error.
+
+| Client | Key Prefix | Sees Published | Sees Drafts |
+|--------|-----------|---------------|-------------|
+| `ArchitectDelivery` | `arch_delivery_` | Yes | No |
+| `ArchitectPreview` | `arch_preview_` | Yes | Yes |
+
+## Website Preview Integration
+
+To enable live preview from the Architect admin UI:
+
+### 1. Configure the preview URL on your model
+
+In the Architect admin UI, go to your model's settings tab and set the **Preview URL** template:
+
+```
+https://yoursite.com/blog/{slug}?preview=true
+```
+
+Use `{fieldName}` placeholders for entry data, `{id}` for entry ID.
+
+### 2. Add a preview API route to your website
+
+**Next.js example** (`app/api/preview/route.ts`):
+
+```typescript
+import { ArchitectPreview } from '@architect-cms/delivery';
+
+const preview = new ArchitectPreview({
+  apiKey: process.env.ARCHITECT_PREVIEW_KEY!,
+  organizationId: process.env.ARCHITECT_ORG_ID!,
+  environmentId: process.env.ARCHITECT_ENV_ID!,
+  baseUrl: process.env.ARCHITECT_API_URL!,
+});
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const entryId = searchParams.get('entryId');
+
+  if (!entryId) {
+    return new Response('Missing entryId', { status: 400 });
+  }
+
+  // Fetch draft entry with preview key
+  const entry = await preview.entries.get(entryId);
+
+  // Your rendering logic here
+  return new Response(renderEntry(entry), {
+    headers: { 'Content-Type': 'text/html' },
+  });
+}
+```
+
+### 3. Preview from the admin UI
+
+When editing an entry, click the **Preview** button in the top-right toolbar. The entry's website preview appears in a side panel alongside the editor, updating as you save changes.
+
+## Type Generation
+
+Generate TypeScript types from your CMS models:
+
+```bash
+npx @architect-cms/delivery generate-types \
+  --apiKey arch_delivery_... \
+  --organizationId org_123 \
+  --environmentId env_prod \
+  --baseUrl https://api.yoursite.com \
+  --output ./src/architect-types.ts
+```
+
+Then use with generics:
+
+```typescript
+import { BlogPost } from './architect-types';
+
+const posts = await client.entries.model<BlogPost>('blog-post').fetch();
+// posts[0].data.title -- fully typed
+```
+
+## Filter Operators
+
+| Operator | Example | Description |
+|----------|---------|-------------|
+| `eq` | `.where('status', 'active')` | Equals (default) |
+| `ne` | `.where('status', 'ne', 'archived')` | Not equals |
+| `gt` | `.where('price', 'gt', 100)` | Greater than |
+| `gte` | `.where('price', 'gte', 100)` | Greater than or equal |
+| `lt` | `.where('price', 'lt', 500)` | Less than |
+| `lte` | `.where('price', 'lte', 500)` | Less than or equal |
+| `in` | `.where('tag', 'in', ['a', 'b'])` | Value in array |
+| `contains` | `.where('title', 'contains', 'launch')` | String contains (case-insensitive) |
+
+## Performance
+
+- **expandRelations**: Relations are expanded by default. Disable for faster queries:
+  ```typescript
+  const posts = await client.entries.model('blog-post').expandRelations(false).fetch();
+  ```
+
+## Requirements
+
+- Node.js 18+ (uses native `fetch`)
+- Architect CMS delivery API key
