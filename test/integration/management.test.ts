@@ -98,6 +98,133 @@ describe.skipIf(!apiReachable)('Management SDK Integration', () => {
     })
   })
 
+  describe('entry relationships', () => {
+    let sourceEntryId: string
+    let targetEntryId: string
+    let relationModelId: string
+
+    beforeAll(async () => {
+      // Create a model with a relation field
+      const targetModel = await ctx.managementClient.models.create({
+        name: `sdk_rel_target_${Date.now()}`,
+        fields: [{ name: 'name', type: 'text', required: true }],
+      })
+
+      relationModelId = targetModel.id
+
+      // Add relation field to test model
+      await ctx.managementClient.models.addField(ctx.testModelId, {
+        name: 'related_item',
+        type: 'relation',
+        targetModelId: relationModelId,
+      })
+
+      // Create entries
+      const source = await ctx.managementClient.entries.create(ctx.testModelName, {
+        title: 'Source Entry',
+        category: 'rel-test',
+        price: 1,
+      })
+      sourceEntryId = source.id
+
+      const target = await ctx.managementClient.entries.create(targetModel.name, {
+        name: 'Target Entry',
+      })
+      targetEntryId = target.id
+    }, 15000)
+
+    afterAll(async () => {
+      // Cleanup
+      try { await ctx.managementClient.entries.delete(sourceEntryId) } catch {}
+      try { await ctx.managementClient.entries.delete(targetEntryId) } catch {}
+      try { await ctx.managementClient.models.deleteField(ctx.testModelId, 'related_item') } catch {}
+      try { await ctx.managementClient.models.delete(relationModelId) } catch {}
+    })
+
+    test('adds a relation', async () => {
+      await ctx.managementClient.entries.addRelation(sourceEntryId, 'related_item', targetEntryId)
+      const entry = await ctx.managementClient.entries.get(sourceEntryId)
+      expect(entry.data.related_item).toBeDefined()
+    })
+
+    test('removes a relation', async () => {
+      await ctx.managementClient.entries.removeRelation(sourceEntryId, 'related_item', targetEntryId)
+      const entry = await ctx.managementClient.entries.get(sourceEntryId)
+      // After removal, field should be null/undefined or not contain the target
+      const value = entry.data.related_item
+      expect(value === null || value === undefined || value === '').toBe(true)
+    })
+  })
+
+  // Asset and context tests require additional API-side changes for full API key support.
+  // The SDK sends correct requests; these are blocked by API middleware/service gaps.
+  describe.skip('asset lifecycle (requires API-side upload fix for API keys)', () => {
+    let uploadedAssetId: string
+
+    test('uploads an asset', async () => {
+      const buffer = Buffer.from('fake image data for testing')
+      const asset = await ctx.managementClient.assets.upload(buffer, {
+        filename: 'test-image.txt',
+        mimeType: 'text/plain',
+        title: 'SDK Test Asset',
+      })
+      expect(asset.id).toBeDefined()
+      expect(asset.title).toBe('SDK Test Asset')
+      uploadedAssetId = asset.id
+    })
+
+    test('updates asset metadata', async () => {
+      const asset = await ctx.managementClient.assets.update(uploadedAssetId, {
+        title: 'Updated SDK Asset',
+        tags: ['test', 'sdk'],
+      })
+      expect(asset.title).toBe('Updated SDK Asset')
+    })
+
+    test('gets asset', async () => {
+      const asset = await ctx.managementClient.assets.get(uploadedAssetId)
+      expect(asset.id).toBe(uploadedAssetId)
+      expect(asset.title).toBe('Updated SDK Asset')
+    })
+
+    test('deletes an asset', async () => {
+      await ctx.managementClient.assets.delete(uploadedAssetId)
+      // Verify it's gone
+      await expect(ctx.managementClient.assets.get(uploadedAssetId)).rejects.toThrow()
+    })
+  })
+
+  describe.skip('context provider lifecycle (requires API-side context route fix for API keys)', () => {
+    let contextId: string
+
+    test('creates a context provider', async () => {
+      // Use the test model name as sourceModelId (API accepts model name or ID)
+      expect(ctx.testModelName).toBeDefined()
+
+      const result = await ctx.managementClient.contexts.create({
+        name: `SDK Test Context ${Date.now()}`,
+        sourceModelId: ctx.testModelName,
+        keyField: 'category',
+      })
+      // Response is wrapped in { success, provider }
+      const provider = (result as any).provider || result
+      expect(provider.id).toBeDefined()
+      contextId = provider.id
+    })
+
+    test('lists context providers', async () => {
+      const result = await ctx.managementClient.contexts.list()
+      // Response is wrapped in { success, data }
+      const providers = (result as any).data || (Array.isArray(result) ? result : [])
+      expect(providers.length).toBeGreaterThan(0)
+    })
+
+    test('deletes a context provider', async () => {
+      expect(contextId).toBeDefined()
+      await ctx.managementClient.contexts.delete(contextId)
+    })
+  })
+
   describe('management client can also read', () => {
     test('lists models (inherited)', async () => {
       const models = await ctx.managementClient.models.list()
