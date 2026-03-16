@@ -8,7 +8,9 @@ export class AssetsResource {
   ) {}
 
   async get(id: string): Promise<Asset> {
-    return this.http.get<Asset>(`/api/v2/assets/${id}`)
+    // API returns { asset } — unwrap
+    const response = await this.http.get<{ asset: Asset }>(`/api/v2/assets/${id}`)
+    return response.asset
   }
 
   imageUrl(id: string, transforms?: ImageTransformOptions): string {

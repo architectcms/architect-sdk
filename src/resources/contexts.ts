@@ -5,19 +5,31 @@ export class ContextsResource {
   constructor(private readonly http: HttpClient) {}
 
   async list(): Promise<ContextProvider[]> {
-    return this.http.get<ContextProvider[]>('/api/context-providers')
+    // API returns { success, providers } — unwrap
+    const response = await this.http.get<{ providers: ContextProvider[] }>('/api/context-providers')
+    return response.providers
   }
 
   async get(id: string): Promise<ContextProvider> {
-    return this.http.get<ContextProvider>(`/api/context-providers/${id}`)
+    // API returns { success, provider } — unwrap
+    const response = await this.http.get<{ provider: ContextProvider }>(`/api/context-providers/${id}`)
+    return response.provider
   }
 
   async create(data: { name: string; sourceModelId: string; [key: string]: unknown }): Promise<ContextProvider> {
-    return this.http.post<ContextProvider>('/api/context-providers', data)
+    // API expects 'sourceModel' not 'sourceModelId'; returns { success, provider }
+    const { sourceModelId, ...rest } = data
+    const response = await this.http.post<{ provider: ContextProvider }>('/api/context-providers', {
+      ...rest,
+      sourceModel: sourceModelId,
+    })
+    return response.provider
   }
 
   async update(id: string, data: Partial<ContextProvider>): Promise<ContextProvider> {
-    return this.http.put<ContextProvider>(`/api/context-providers/${id}`, data)
+    // API returns { success, provider } — unwrap
+    const response = await this.http.put<{ provider: ContextProvider }>(`/api/context-providers/${id}`, data)
+    return response.provider
   }
 
   async delete(id: string): Promise<void> {

@@ -31,14 +31,18 @@ export class ManagementAssetsResource extends AssetsResource {
     if (options.description) formData.append('description', options.description)
     if (options.tags) formData.append('tags', JSON.stringify(options.tags))
 
-    return this.httpClient.postFormData<Asset>('/api/v2/assets/upload', formData)
+    // API returns { message, asset } — unwrap
+    const response = await this.httpClient.postFormData<{ asset: Asset }>('/api/v2/assets/upload', formData)
+    return response.asset
   }
 
   async update(
     id: string,
     metadata: { title?: string; description?: string; tags?: string[]; alt?: string; category?: string }
   ): Promise<Asset> {
-    return this.httpClient.put<Asset>(`/api/v2/assets/${id}`, metadata)
+    // API returns { message, asset } — unwrap
+    const response = await this.httpClient.put<{ asset: Asset }>(`/api/v2/assets/${id}`, metadata)
+    return response.asset
   }
 
   async delete(id: string): Promise<void> {

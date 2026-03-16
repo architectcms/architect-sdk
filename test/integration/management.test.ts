@@ -156,9 +156,7 @@ describe.skipIf(!apiReachable)('Management SDK Integration', () => {
     })
   })
 
-  // Asset and context tests require additional API-side changes for full API key support.
-  // The SDK sends correct requests; these are blocked by API middleware/service gaps.
-  describe.skip('asset lifecycle (requires API-side upload fix for API keys)', () => {
+  describe('asset lifecycle', () => {
     let uploadedAssetId: string
 
     test('uploads an asset', async () => {
@@ -194,28 +192,23 @@ describe.skipIf(!apiReachable)('Management SDK Integration', () => {
     })
   })
 
-  describe.skip('context provider lifecycle (requires API-side context route fix for API keys)', () => {
+  describe('context provider lifecycle', () => {
     let contextId: string
 
     test('creates a context provider', async () => {
-      // Use the test model name as sourceModelId (API accepts model name or ID)
-      expect(ctx.testModelName).toBeDefined()
-
-      const result = await ctx.managementClient.contexts.create({
+      const provider = await ctx.managementClient.contexts.create({
         name: `SDK Test Context ${Date.now()}`,
         sourceModelId: ctx.testModelName,
         keyField: 'category',
+        derivationPath: ['category'],
       })
-      // Response is wrapped in { success, provider }
-      const provider = (result as any).provider || result
       expect(provider.id).toBeDefined()
       contextId = provider.id
     })
 
     test('lists context providers', async () => {
-      const result = await ctx.managementClient.contexts.list()
-      // Response is wrapped in { success, data }
-      const providers = (result as any).data || (Array.isArray(result) ? result : [])
+      const providers = await ctx.managementClient.contexts.list()
+      expect(Array.isArray(providers)).toBe(true)
       expect(providers.length).toBeGreaterThan(0)
     })
 

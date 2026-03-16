@@ -17,7 +17,7 @@ describe('AssetsResource', () => {
   })
 
   test('get() calls correct endpoint', async () => {
-    mockGet.mockResolvedValue({ id: 'asset_1', title: 'Hero Image', filename: 'hero.jpg' })
+    mockGet.mockResolvedValue({ asset: { id: 'asset_1', title: 'Hero Image', filename: 'hero.jpg' } })
 
     const result = await assets.get('asset_1')
 

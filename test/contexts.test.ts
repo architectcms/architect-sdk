@@ -10,41 +10,43 @@ describe('ContextsResource', () => {
   let mockDel: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
-    mockGet = vi.fn().mockResolvedValue([])
-    mockPost = vi.fn().mockResolvedValue({ id: 'ctx_1', name: 'Region' })
-    mockPut = vi.fn().mockResolvedValue({ id: 'ctx_1', name: 'Updated Region' })
+    mockGet = vi.fn().mockResolvedValue({ providers: [] })
+    mockPost = vi.fn().mockResolvedValue({ provider: { id: 'ctx_1', name: 'Region' } })
+    mockPut = vi.fn().mockResolvedValue({ provider: { id: 'ctx_1', name: 'Updated Region' } })
     mockDel = vi.fn().mockResolvedValue({})
     const httpClient = { get: mockGet, post: mockPost, put: mockPut, del: mockDel } as unknown as HttpClient
     contexts = new ContextsResource(httpClient)
   })
 
-  test('list() calls correct endpoint', async () => {
-    mockGet.mockResolvedValue([{ id: 'ctx_1', name: 'Region' }])
+  test('list() calls correct endpoint and unwraps', async () => {
+    mockGet.mockResolvedValue({ providers: [{ id: 'ctx_1', name: 'Region' }] })
     const result = await contexts.list()
     expect(mockGet).toHaveBeenCalledWith('/api/context-providers')
     expect(result).toHaveLength(1)
+    expect(result[0].name).toBe('Region')
   })
 
-  test('get() calls correct endpoint', async () => {
-    mockGet.mockResolvedValue({ id: 'ctx_1', name: 'Region' })
+  test('get() calls correct endpoint and unwraps', async () => {
+    mockGet.mockResolvedValue({ provider: { id: 'ctx_1', name: 'Region' } })
     const result = await contexts.get('ctx_1')
     expect(mockGet).toHaveBeenCalledWith('/api/context-providers/ctx_1')
     expect(result.name).toBe('Region')
   })
 
-  test('create() sends POST', async () => {
+  test('create() maps sourceModelId to sourceModel', async () => {
     await contexts.create({ name: 'Region', sourceModelId: 'model_1' })
     expect(mockPost).toHaveBeenCalledWith('/api/context-providers', {
       name: 'Region',
-      sourceModelId: 'model_1',
+      sourceModel: 'model_1',
     })
   })
 
-  test('update() sends PUT', async () => {
-    await contexts.update('ctx_1', { name: 'Updated Region' })
+  test('update() sends PUT and unwraps', async () => {
+    const result = await contexts.update('ctx_1', { name: 'Updated Region' })
     expect(mockPut).toHaveBeenCalledWith('/api/context-providers/ctx_1', {
       name: 'Updated Region',
     })
+    expect(result.name).toBe('Updated Region')
   })
 
   test('delete() sends DELETE', async () => {

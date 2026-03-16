@@ -10,9 +10,9 @@ describe('ManagementAssetsResource', () => {
   let mockDel: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
-    mockGet = vi.fn().mockResolvedValue({ id: 'asset_1' })
-    mockPostFormData = vi.fn().mockResolvedValue({ id: 'asset_1', filename: 'hero.jpg' })
-    mockPut = vi.fn().mockResolvedValue({ id: 'asset_1' })
+    mockGet = vi.fn().mockResolvedValue({ asset: { id: 'asset_1' } })
+    mockPostFormData = vi.fn().mockResolvedValue({ asset: { id: 'asset_1', filename: 'hero.jpg' } })
+    mockPut = vi.fn().mockResolvedValue({ asset: { id: 'asset_1' } })
     mockDel = vi.fn().mockResolvedValue({})
     const httpClient = {
       get: mockGet, postFormData: mockPostFormData,
