@@ -55,9 +55,7 @@ describe.skipIf(!apiReachable)('Management SDK Integration', () => {
     })
   })
 
-  // Model write operations require the code_root environment.
-  // These tests are skipped unless the test env is code_root.
-  describe.skip('model lifecycle (requires code_root env)', () => {
+  describe('model lifecycle', () => {
     let createdModelId: string
 
     test('creates a model', async () => {

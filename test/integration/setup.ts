@@ -68,23 +68,13 @@ export async function setupTestContext(): Promise<TestContext> {
   const organizationId = orgBody.data?.id || orgBody.id
   const scopedHeaders = { ...authHeaders, 'X-Organization': organizationId }
 
-  // 3. Fetch environments for this org (auto-created on org creation)
-  const { body: envListBody } = await fetchJson(`${BASE_URL}/api/environments`, {
+  // 3. Initialize default environments (dev/staging/prod with proper roles)
+  await fetchJson(`${BASE_URL}/api/environments/initialize-defaults`, {
+    method: 'POST',
     headers: scopedHeaders,
   })
-  const environments = envListBody?.data || envListBody || []
-  let environmentId: string
-  if (Array.isArray(environments) && environments.length > 0) {
-    environmentId = environments[0].id
-  } else {
-    // Create one if none exist
-    const { body: envBody } = await fetchJson(`${BASE_URL}/api/environments`, {
-      method: 'POST',
-      headers: { ...scopedHeaders, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: 'test', type: 'development' }),
-    })
-    environmentId = envBody.data?.id || envBody.id
-  }
+  // Use 'development' environment (code_root role — allows model mutations)
+  const environmentId = 'development'
   const fullScopedHeaders = { ...scopedHeaders, 'X-Environment': environmentId }
 
   // 4. Create a delivery API key for this org/env
