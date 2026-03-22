@@ -1,17 +1,17 @@
-# @architect-cms/delivery
+# @architect-cms/sdk
 
-TypeScript SDK for consuming published content from [Architect CMS](https://github.com/your-org/architect).
+TypeScript SDK for [Architect CMS](https://github.com/your-org/architect) — delivery, preview, and management clients.
 
 ## Installation
 
 ```bash
-npm install @architect-cms/delivery
+npm install @architect-cms/sdk
 ```
 
 ## Quick Start
 
 ```typescript
-import { ArchitectDelivery } from '@architect-cms/delivery';
+import { ArchitectDelivery } from '@architect-cms/sdk';
 
 const client = new ArchitectDelivery({
   apiKey: 'arch_delivery_...',
@@ -44,12 +44,39 @@ const imageUrl = client.assets.imageUrl('asset_123', {
 });
 ```
 
+## Context-Aware Content
+
+Architect supports context providers that deliver different content based on runtime parameters (loyalty tier, language, region, etc.). Pass context when fetching entries to get resolved content:
+
+```typescript
+// Fetch products with VIP pricing for French audience
+const products = await client.entries
+  .model('product')
+  .withContext('loyalty_tier', 'vip')
+  .withContext('language', 'fr')
+  .fetch();
+
+// Or pass multiple contexts at once
+const products = await client.entries
+  .model('product')
+  .withContexts({ loyalty_tier: 'vip', language: 'fr' })
+  .fetch();
+
+// Context also works on single entry lookups
+const product = await client.entries.get('entry_123', {
+  loyalty_tier: 'vip',
+  language: 'fr',
+});
+```
+
+The API resolves context overrides server-side — the returned entry `data` contains the values for that specific context. No client-side resolution needed.
+
 ## Preview Mode
 
 Use `ArchitectPreview` with a preview API key to access draft/unpublished entries:
 
 ```typescript
-import { ArchitectPreview } from '@architect-cms/delivery';
+import { ArchitectPreview } from '@architect-cms/sdk';
 
 const preview = new ArchitectPreview({
   apiKey: 'arch_preview_...',    // preview key (not delivery)
@@ -60,6 +87,12 @@ const preview = new ArchitectPreview({
 
 // Returns ALL entries including unpublished drafts
 const drafts = await preview.entries.model('blog-post').fetch();
+
+// Context works in preview mode too
+const localizedDraft = await preview.entries
+  .model('blog-post')
+  .withContext('language', 'fr')
+  .fetch();
 ```
 
 **Key type validation:** Each client only accepts its matching key prefix. Using the wrong key type throws a descriptive error.
@@ -75,7 +108,7 @@ const drafts = await preview.entries.model('blog-post').fetch();
 Use `ArchitectManagement` with a management API key for full CRUD operations:
 
 ```typescript
-import { ArchitectManagement } from '@architect-cms/delivery';
+import { ArchitectManagement } from '@architect-cms/sdk';
 
 const client = new ArchitectManagement({
   apiKey: 'arch_mgmt_...',
@@ -136,7 +169,7 @@ Use `{fieldName}` placeholders for entry data, `{id}` for entry ID.
 **Next.js example** (`app/api/preview/route.ts`):
 
 ```typescript
-import { ArchitectPreview } from '@architect-cms/delivery';
+import { ArchitectPreview } from '@architect-cms/sdk';
 
 const preview = new ArchitectPreview({
   apiKey: process.env.ARCHITECT_PREVIEW_KEY!,
@@ -172,7 +205,7 @@ When editing an entry, click the **Preview** button in the top-right toolbar. Th
 Generate TypeScript types from your CMS models:
 
 ```bash
-npx @architect-cms/delivery generate-types \
+npx @architect-cms/sdk generate-types \
   --apiKey arch_delivery_... \
   --organizationId org_123 \
   --environmentId env_prod \
@@ -212,4 +245,4 @@ const posts = await client.entries.model<BlogPost>('blog-post').fetch();
 ## Requirements
 
 - Node.js 18+ (uses native `fetch`)
-- Architect CMS delivery API key
+- Architect CMS API key

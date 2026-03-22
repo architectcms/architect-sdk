@@ -1,12 +1,12 @@
 {
-  "name": "@architect-cms/delivery",
+  "name": "@architect-cms/sdk",
   "version": "0.1.0",
-  "description": "TypeScript SDK for consuming published content from Architect CMS",
+  "description": "TypeScript SDK for Architect CMS — delivery, preview, and management clients",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "bin": {
-    "architect-delivery": "./dist/cli.js"
+    "architect-sdk": "./dist/cli.js"
   },
   "exports": {
     ".": {
@@ -32,6 +32,8 @@
     "sdk",
     "content",
     "delivery",
+    "preview",
+    "management",
     "headless"
   ],
   "license": "MIT",

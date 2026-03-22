@@ -19,8 +19,27 @@ describe('EntriesResource', () => {
 
     const result = await entries.get('entry_1')
 
-    expect(mockGet).toHaveBeenCalledWith('/api/entries/entry_1')
+    expect(mockGet).toHaveBeenCalledWith('/api/entries/entry_1', undefined)
     expect(result.id).toBe('entry_1')
+  })
+
+  test('get() with context passes context as query params', async () => {
+    mockGet.mockResolvedValue({ id: 'entry_1', modelId: 'product', data: { price: 99 } })
+
+    await entries.get('entry_1', { loyalty_tier: 'vip', language: 'fr' })
+
+    expect(mockGet).toHaveBeenCalledWith('/api/entries/entry_1', {
+      loyalty_tier: 'vip',
+      language: 'fr',
+    })
+  })
+
+  test('get() with empty context passes undefined', async () => {
+    mockGet.mockResolvedValue({ id: 'entry_1', modelId: 'product', data: {} })
+
+    await entries.get('entry_1', {})
+
+    expect(mockGet).toHaveBeenCalledWith('/api/entries/entry_1', undefined)
   })
 
   test('model() returns a query builder', () => {
@@ -143,6 +162,44 @@ describe('EntriesResource', () => {
 
     // Type check — this compiles if generics work
     expect(result).toBeDefined()
+  })
+
+  test('withContext() sends context as query params', async () => {
+    await entries
+      .model('product')
+      .withContext('loyalty_tier', 'vip')
+      .withContext('language', 'fr')
+      .fetch()
+
+    expect(mockGet).toHaveBeenCalledWith(
+      '/api/entries/model/product',
+      expect.objectContaining({
+        loyalty_tier: 'vip',
+        language: 'fr',
+        resolveRelations: 'true',
+      })
+    )
+  })
+
+  test('withContexts() sends all context params at once', async () => {
+    await entries
+      .model('product')
+      .withContexts({ loyalty_tier: 'vip', language: 'fr' })
+      .fetch()
+
+    expect(mockGet).toHaveBeenCalledWith(
+      '/api/entries/model/product',
+      expect.objectContaining({
+        loyalty_tier: 'vip',
+        language: 'fr',
+      })
+    )
+  })
+
+  test('withContext() is immutable', () => {
+    const base = entries.model('product')
+    const withContext = base.withContext('language', 'fr')
+    expect(base).not.toBe(withContext)
   })
 
   test('builder is immutable (each call returns new instance)', () => {

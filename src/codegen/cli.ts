@@ -37,7 +37,7 @@ function parseArgs(argv: string[]): CliArgs {
       console.error(`Missing required argument: --${key}`)
       console.error('')
       console.error('Usage:')
-      console.error('  architect-delivery generate-types \\')
+      console.error('  architect-sdk generate-types \\')
       console.error('    --apiKey arch_delivery_... \\')
       console.error('    --organizationId org_123 \\')
       console.error('    --environmentId env_prod \\')

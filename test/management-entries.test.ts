@@ -21,7 +21,7 @@ describe('ManagementEntriesResource', () => {
   test('get() works (inherited)', async () => {
     mockGet.mockResolvedValue({ id: 'entry_1' })
     const result = await entries.get('entry_1')
-    expect(mockGet).toHaveBeenCalledWith('/api/entries/entry_1')
+    expect(mockGet).toHaveBeenCalledWith('/api/entries/entry_1', undefined)
     expect(result.id).toBe('entry_1')
   })
 
