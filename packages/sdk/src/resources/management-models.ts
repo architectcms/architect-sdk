@@ -10,7 +10,18 @@ export class ManagementModelsResource extends ModelsResource {
     this.httpClient = http
   }
 
-  async create(data: { name: string; description?: string; fields?: Partial<Field>[] }): Promise<Model> {
+  async create(data: {
+    name: string
+    displayName?: string
+    description?: string
+    fields?: Partial<Field>[]
+    /** Field name used as the lookup key (must exist in `fields`). */
+    keyField?: string
+    /** Mark this model as a context source model (for context providers). */
+    isContextModel?: boolean
+    type?: 'single' | 'multiple'
+    category?: 'reference_data' | 'content' | 'configuration' | 'transactional'
+  }): Promise<Model> {
     return this.httpClient.post<Model>('/api/models', data)
   }
 

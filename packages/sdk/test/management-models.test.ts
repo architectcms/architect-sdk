@@ -40,6 +40,21 @@ describe('ManagementModelsResource', () => {
     })
   })
 
+  test('create() forwards context-model fields (keyField, isContextModel)', async () => {
+    await models.create({
+      name: 'Locale',
+      isContextModel: true,
+      keyField: 'code',
+      fields: [{ name: 'code', type: 'string' }, { name: 'name', type: 'string' }],
+    })
+    expect(mockPost).toHaveBeenCalledWith('/api/models', {
+      name: 'Locale',
+      isContextModel: true,
+      keyField: 'code',
+      fields: [{ name: 'code', type: 'string' }, { name: 'name', type: 'string' }],
+    })
+  })
+
   test('update() sends PUT', async () => {
     await models.update('model_1', { description: 'Updated' })
     expect(mockPut).toHaveBeenCalledWith('/api/models/model_1', { description: 'Updated' })
