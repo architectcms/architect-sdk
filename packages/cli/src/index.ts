@@ -4,6 +4,7 @@ import { registerWhoami } from './commands/whoami'
 import { registerLogout } from './commands/logout'
 import { registerModels } from './commands/models'
 import { registerEntries } from './commands/entries'
+import { registerTypes } from './commands/types'
 
 const program = new Command()
 program.name('architect').description('Architect CMS command-line tool').version('0.0.0')
@@ -12,4 +13,5 @@ registerWhoami(program)
 registerLogout(program)
 registerModels(program)
 registerEntries(program)
+registerTypes(program)
 program.parseAsync(process.argv)
