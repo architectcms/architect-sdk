@@ -1,0 +1,27 @@
+{
+  "name": "@architect-cms/cli",
+  "version": "0.0.0",
+  "description": "Command-line tool for Architect CMS",
+  "type": "module",
+  "bin": { "architect": "./dist/index.js" },
+  "files": ["dist"],
+  "engines": { "node": ">=18.0.0" },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "lint": "tsc --noEmit",
+    "dev": "tsup --watch"
+  },
+  "dependencies": {
+    "@architect-cms/sdk": "*",
+    "commander": "^12.1.0",
+    "open": "^10.1.0",
+    "@inquirer/prompts": "^7.2.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.0",
+    "@types/node": "^25.5.0"
+  }
+}
