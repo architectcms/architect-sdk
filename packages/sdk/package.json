@@ -1,6 +1,6 @@
 {
   "name": "@architectcms/sdk",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "TypeScript SDK for Architect CMS — delivery, preview, and management clients",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -37,6 +37,17 @@
     "headless"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/architectcms/architect-sdk.git",
+    "directory": "packages/sdk"
+  },
+  "homepage": "https://github.com/architectcms/architect-sdk/tree/main/packages/sdk#readme",
+  "bugs": "https://github.com/architectcms/architect-sdk/issues",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "engines": {
     "node": ">=18.0.0"
   },

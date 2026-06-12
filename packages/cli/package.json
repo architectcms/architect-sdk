@@ -1,11 +1,30 @@
 {
   "name": "@architectcms/cli",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Command-line tool for Architect CMS",
   "type": "module",
-  "bin": { "architect": "./dist/index.js" },
-  "files": ["dist"],
-  "engines": { "node": ">=18.0.0" },
+  "bin": {
+    "architect": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "examples"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/architectcms/architect-sdk.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/architectcms/architect-sdk/tree/main/packages/cli#readme",
+  "bugs": "https://github.com/architectcms/architect-sdk/issues",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "build": "tsup",
     "test": "vitest run",
@@ -13,7 +32,7 @@
     "dev": "tsup --watch"
   },
   "dependencies": {
-    "@architectcms/sdk": "*",
+    "@architectcms/sdk": "^0.2.0",
     "commander": "^12.1.0",
     "@inquirer/prompts": "^7.2.0"
   },
