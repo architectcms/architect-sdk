@@ -4,6 +4,7 @@ import { ManagementModelsResource } from './resources/management-models'
 import { ManagementAssetsResource } from './resources/management-assets'
 import { ContextsResource } from './resources/contexts'
 import { BundlesResource } from './resources/bundles'
+import { EnvironmentsResource } from './resources/environments'
 import { ArchitectDelivery } from './client'
 import type { ClientConfig } from './types/common'
 
@@ -13,6 +14,7 @@ export class ArchitectManagement extends ArchitectDelivery {
   public override readonly assets: ManagementAssetsResource
   public readonly contexts: ContextsResource
   public readonly bundles: BundlesResource
+  public readonly environments: EnvironmentsResource
 
   constructor(config: ClientConfig) {
     if (!config.apiKey) throw new Error('apiKey is required')
@@ -32,5 +34,6 @@ export class ArchitectManagement extends ArchitectDelivery {
     this.assets = new ManagementAssetsResource(http, baseUrl)
     this.contexts = new ContextsResource(http)
     this.bundles = new BundlesResource(http)
+    this.environments = new EnvironmentsResource(http)
   }
 }
