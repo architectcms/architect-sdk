@@ -10,6 +10,7 @@ import { registerContexts } from './commands/contexts'
 import { registerEnv } from './commands/env'
 import { registerLifecycle } from './commands/lifecycle'
 import { registerWebhooks } from './commands/webhooks'
+import { registerContextActions } from './commands/context-actions'
 import { registerEntries } from './commands/entries'
 import { registerTypes } from './commands/types'
 import { registerInit } from './commands/init'
@@ -36,6 +37,7 @@ registerContexts(program)
 registerEnv(program)
 registerLifecycle(program)
 registerWebhooks(program)
+registerContextActions(program)
 registerEntries(program)
 registerTypes(program)
 registerInit(program)
