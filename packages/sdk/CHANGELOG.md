@@ -1,5 +1,11 @@
 # @architectcms/sdk
 
+## 0.2.1
+
+### Patch Changes
+
+- c2a620c: Fix the regeneration hint in generated type files to a valid command (`architect types generate`).
+
 ## 0.2.0
 
 ### Minor Changes

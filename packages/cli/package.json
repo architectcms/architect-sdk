@@ -1,6 +1,6 @@
 {
   "name": "@architectcms/cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Command-line tool for Architect CMS",
   "type": "module",
   "bin": {
@@ -32,7 +32,7 @@
     "dev": "tsup --watch"
   },
   "dependencies": {
-    "@architectcms/sdk": "^0.2.0",
+    "@architectcms/sdk": "^0.2.1",
     "commander": "^12.1.0",
     "@inquirer/prompts": "^7.2.0"
   },
