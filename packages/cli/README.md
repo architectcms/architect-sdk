@@ -1,13 +1,13 @@
-# @architect-cms/cli
+# @architectcms/cli
 
 Command-line tool for [Architect CMS](https://architectcms.com). Authenticate, bootstrap a workspace, and manage your content models and entries — all from the terminal.
 
-The CLI is a thin wrapper around [`@architect-cms/sdk`](../sdk): every content API call goes through the SDK. The only direct HTTP it performs is the auth/onboarding bootstrap (Google login, org creation, key minting).
+The CLI is a thin wrapper around [`@architectcms/sdk`](../sdk): every API call goes through the SDK, and it authenticates with a management API key just like the SDK. It performs no direct HTTP of its own.
 
 ## Install
 
 ```bash
-npm install -g @architect-cms/cli
+npm install -g @architectcms/cli
 ```
 
 This installs the `architect` command.
@@ -81,4 +81,4 @@ Credentials are stored at `~/.architect/credentials.json` with `0600` permission
 
 ### Authentication
 
-The CLI authenticates with a **management API key** (`arch_mgmt_…`) — the same key model the SDK uses. Create one in the web app, then run `architect login` (or pass `--api-key`/`--organization-id`/`--environment-id` for non-interactive/CI use). The CLI talks to the API only through `@architect-cms/sdk`; there is no browser/OAuth flow.
+The CLI authenticates with a **management API key** (`arch_mgmt_…`) — the same key model the SDK uses. Create one in the web app, then run `architect login` (or pass `--api-key`/`--organization-id`/`--environment-id` for non-interactive/CI use). The CLI talks to the API only through `@architectcms/sdk`; there is no browser/OAuth flow.

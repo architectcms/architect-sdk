@@ -1,17 +1,17 @@
-# @architect-cms/sdk
+# @architectcms/sdk
 
 TypeScript SDK for [Architect CMS](https://github.com/your-org/architect) — delivery, preview, and management clients.
 
 ## Installation
 
 ```bash
-npm install @architect-cms/sdk
+npm install @architectcms/sdk
 ```
 
 ## Quick Start
 
 ```typescript
-import { ArchitectDelivery } from '@architect-cms/sdk';
+import { ArchitectDelivery } from '@architectcms/sdk';
 
 const client = new ArchitectDelivery({
   apiKey: 'arch_delivery_...',
@@ -76,7 +76,7 @@ The API resolves context overrides server-side — the returned entry `data` con
 Use `ArchitectPreview` with a preview API key to access draft/unpublished entries:
 
 ```typescript
-import { ArchitectPreview } from '@architect-cms/sdk';
+import { ArchitectPreview } from '@architectcms/sdk';
 
 const preview = new ArchitectPreview({
   apiKey: 'arch_preview_...',    // preview key (not delivery)
@@ -108,7 +108,7 @@ const localizedDraft = await preview.entries
 Use `ArchitectManagement` with a management API key for full CRUD operations:
 
 ```typescript
-import { ArchitectManagement } from '@architect-cms/sdk';
+import { ArchitectManagement } from '@architectcms/sdk';
 
 const client = new ArchitectManagement({
   apiKey: 'arch_mgmt_...',
@@ -169,7 +169,7 @@ Use `{fieldName}` placeholders for entry data, `{id}` for entry ID.
 **Next.js example** (`app/api/preview/route.ts`):
 
 ```typescript
-import { ArchitectPreview } from '@architect-cms/sdk';
+import { ArchitectPreview } from '@architectcms/sdk';
 
 const preview = new ArchitectPreview({
   apiKey: process.env.ARCHITECT_PREVIEW_KEY!,
@@ -205,7 +205,7 @@ When editing an entry, click the **Preview** button in the top-right toolbar. Th
 Generate TypeScript types from your CMS models:
 
 ```bash
-npx @architect-cms/sdk generate-types \
+npx @architectcms/sdk generate-types \
   --apiKey arch_delivery_... \
   --organizationId org_123 \
   --environmentId env_prod \

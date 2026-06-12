@@ -1,4 +1,4 @@
-import type { ArchitectManagement } from '@architect-cms/sdk'
+import type { ArchitectManagement } from '@architectcms/sdk'
 import type { InitConfig, LocalizationConfig, StarterModelInput } from './config-schema'
 import { expandLocales } from './localization'
 

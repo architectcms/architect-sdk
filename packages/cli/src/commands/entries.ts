@@ -1,6 +1,6 @@
 import { Command } from 'commander'
 import { writeFileSync, readFileSync } from 'node:fs'
-import type { ArchitectManagement } from '@architect-cms/sdk'
+import type { ArchitectManagement } from '@architectcms/sdk'
 import { getManagementClient } from '../client'
 import { printResult, printError } from '../output'
 

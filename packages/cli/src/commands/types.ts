@@ -1,7 +1,7 @@
 import { Command } from 'commander'
 import { writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { generateTypes } from '@architect-cms/sdk'
+import { generateTypes } from '@architectcms/sdk'
 import { getManagementClient } from '../client'
 import { printError } from '../output'
 

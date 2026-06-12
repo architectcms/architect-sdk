@@ -1,5 +1,5 @@
 {
-  "name": "@architect-cms/sdk",
+  "name": "@architectcms/sdk",
   "version": "0.1.0",
   "description": "TypeScript SDK for Architect CMS — delivery, preview, and management clients",
   "main": "./dist/index.js",

@@ -1,4 +1,4 @@
-import { ArchitectManagement } from '@architect-cms/sdk'
+import { ArchitectManagement } from '@architectcms/sdk'
 import { saveCredentials, type StoredCredentials } from '../credentials'
 
 /**
