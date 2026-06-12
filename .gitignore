@@ -2,3 +2,19 @@ node_modules/
 dist/
 *.tgz
 .DS_Store
+
+# Secrets & credentials — never commit
+.env
+.env.*
+*.pem
+*.key
+.npmrc
+**/credentials.json
+.architect/
+
+# Local/agent artifacts
+.playwright-mcp/
+
+# Internal planning/design docs are kept OUT of this public repo
+docs/plans/
+docs/specs/
