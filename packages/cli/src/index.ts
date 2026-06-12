@@ -8,6 +8,7 @@ import { registerLogout } from './commands/logout'
 import { registerModels } from './commands/models'
 import { registerContexts } from './commands/contexts'
 import { registerEnv } from './commands/env'
+import { registerLifecycle } from './commands/lifecycle'
 import { registerEntries } from './commands/entries'
 import { registerTypes } from './commands/types'
 import { registerInit } from './commands/init'
@@ -32,6 +33,7 @@ registerLogout(program)
 registerModels(program)
 registerContexts(program)
 registerEnv(program)
+registerLifecycle(program)
 registerEntries(program)
 registerTypes(program)
 registerInit(program)
