@@ -15,10 +15,8 @@ This installs the `architect` command.
 ## Quickstart
 
 ```bash
-# 1. Log in.
-#    Paste a management key created in the web app (works today):
-architect login --with-token
-#    …or use Google browser login (requires GOOGLE_CLI_CLIENT_ID; see below):
+# 1. Log in with a management key created in the web app.
+#    Prompts for the key + org/env, or pass them as flags (CI-friendly).
 architect login
 
 # 2. Confirm your session.
@@ -40,7 +38,7 @@ architect types generate --output ./architect-types.ts
 
 | Command | Description |
 | --- | --- |
-| `architect login [--with-token] [--org <name>] [--base-url <url>]` | Authenticate (Google browser login, or `--with-token` to paste a management key). |
+| `architect login [--api-key <key>] [--organization-id <id>] [--environment-id <id>] [--base-url <url>]` | Authenticate with a management API key (prompts for anything not passed). |
 | `architect whoami` | Show the current login and verify the key still works. |
 | `architect logout` | Remove stored credentials. |
 | `architect models pull [--out <file>]` | Fetch all models (writes JSON to a file or stdout). |
@@ -81,11 +79,6 @@ Resolution precedence: **flags > environment variables > config file > built-in 
 
 Credentials are stored at `~/.architect/credentials.json` with `0600` permissions.
 
-### Google login (preview)
+### Authentication
 
-`architect login` (without `--with-token`) opens a browser PKCE flow. It requires:
-
-1. `GOOGLE_CLI_CLIENT_ID` set to a Google **Desktop app** OAuth client id.
-2. A server that accepts the CLI client's token audience.
-
-Until both are in place, use `architect login --with-token` with a management key created in the web app.
+The CLI authenticates with a **management API key** (`arch_mgmt_…`) — the same key model the SDK uses. Create one in the web app, then run `architect login` (or pass `--api-key`/`--organization-id`/`--environment-id` for non-interactive/CI use). The CLI talks to the API only through `@architect-cms/sdk`; there is no browser/OAuth flow.
