@@ -6,6 +6,7 @@ import { ContextsResource } from './resources/contexts'
 import { BundlesResource } from './resources/bundles'
 import { EnvironmentsResource } from './resources/environments'
 import { LifecycleResource } from './resources/lifecycle'
+import { WebhooksResource } from './resources/webhooks'
 import { ArchitectDelivery } from './client'
 import type { ClientConfig } from './types/common'
 
@@ -17,6 +18,7 @@ export class ArchitectManagement extends ArchitectDelivery {
   public readonly bundles: BundlesResource
   public readonly environments: EnvironmentsResource
   public readonly lifecycle: LifecycleResource
+  public readonly webhooks: WebhooksResource
 
   constructor(config: ClientConfig) {
     if (!config.apiKey) throw new Error('apiKey is required')
@@ -38,5 +40,6 @@ export class ArchitectManagement extends ArchitectDelivery {
     this.bundles = new BundlesResource(http)
     this.environments = new EnvironmentsResource(http)
     this.lifecycle = new LifecycleResource(http)
+    this.webhooks = new WebhooksResource(http)
   }
 }
