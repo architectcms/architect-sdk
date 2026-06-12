@@ -1,5 +1,13 @@
 # @architectcms/cli
 
+## 0.1.1
+
+### Patch Changes
+
+- c2a620c: Fix `architect --version` to report the installed package version (it was hardcoded to `0.0.0`).
+- Updated dependencies [c2a620c]
+  - @architectcms/sdk@0.2.1
+
 ## 0.1.0
 
 ### Minor Changes
