@@ -6,6 +6,7 @@ import { registerLogin } from './commands/login'
 import { registerWhoami } from './commands/whoami'
 import { registerLogout } from './commands/logout'
 import { registerModels } from './commands/models'
+import { registerContexts } from './commands/contexts'
 import { registerEntries } from './commands/entries'
 import { registerTypes } from './commands/types'
 import { registerInit } from './commands/init'
@@ -28,6 +29,7 @@ registerLogin(program)
 registerWhoami(program)
 registerLogout(program)
 registerModels(program)
+registerContexts(program)
 registerEntries(program)
 registerTypes(program)
 registerInit(program)
