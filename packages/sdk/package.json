@@ -1,6 +1,6 @@
 {
   "name": "@architectcms/sdk",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "TypeScript SDK for Architect CMS — delivery, preview, and management clients",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

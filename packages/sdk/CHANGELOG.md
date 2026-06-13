@@ -1,5 +1,14 @@
 # @architectcms/sdk
 
+## 0.3.0
+
+### Minor Changes
+
+- 2feb1aa: Add context-actions resource (`client.contextActions`): list/create per provider, get/update/delete by id, execute on an entry
+- ab34b24: Add environments resource (`client.environments`): list, get, create, update, delete
+- b07f9d3: Add lifecycle functions resource (`client.lifecycle`): list/create per model, get/update/delete by function id
+- ff4c799: Add webhooks resource (`client.webhooks`): list, get, create, update, delete, test
+
 ## 0.2.1
 
 ### Patch Changes
