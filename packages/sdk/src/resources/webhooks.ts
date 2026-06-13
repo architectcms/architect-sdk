@@ -1,14 +1,33 @@
 import type { HttpClient } from '../http'
 
+/**
+ * A webhook trigger: an object type + action pair, e.g.
+ * `{ type: 'entry', action: 'published' }`.
+ */
+export interface WebhookTrigger {
+  type: string
+  action: string
+  /** Optional target restriction; specific targets also need targetId. */
+  target?: string
+  targetId?: string
+}
+
 export interface Webhook {
   id: string
-  name?: string
+  name: string
   url: string
-  events: string[]
+  triggers: WebhookTrigger[]
   enabled?: boolean
   createdAt?: string
   updatedAt?: string
 }
+
+export type WebhookInput = {
+  name: string
+  url: string
+  triggers: WebhookTrigger[]
+  enabled?: boolean
+} & Record<string, unknown>
 
 export class WebhooksResource {
   constructor(private readonly http: HttpClient) {}
@@ -25,13 +44,13 @@ export class WebhooksResource {
     return response.data
   }
 
-  async create(data: { url: string; events: string[]; enabled?: boolean; name?: string } & Record<string, unknown>): Promise<Webhook> {
+  async create(data: WebhookInput): Promise<Webhook> {
     // API returns { success, data } — unwrap.
     const response = await this.http.post<{ data: Webhook }>('/api/webhooks', data)
     return response.data
   }
 
-  async update(id: string, data: Partial<{ url: string; events: string[]; enabled: boolean; name: string }> & Record<string, unknown>): Promise<Webhook> {
+  async update(id: string, data: Partial<WebhookInput>): Promise<Webhook> {
     // API returns { success, data } — unwrap.
     const response = await this.http.put<{ data: Webhook }>(`/api/webhooks/${id}`, data)
     return response.data

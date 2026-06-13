@@ -16,11 +16,11 @@ describe('WebhooksResource', () => {
     expect(http.get).toHaveBeenCalledWith('/api/webhooks/wh1')
   })
 
-  it('creates a webhook', async () => {
+  it('creates a webhook (server shape: name + triggers)', async () => {
     const http = { get: vi.fn(), post: vi.fn().mockResolvedValue({ success: true, data: { id: 'wh2' } }), put: vi.fn(), del: vi.fn() } as any
     const wh = new WebhooksResource(http)
-    const created = await wh.create({ url: 'https://x', events: ['entry.published'], enabled: true })
-    expect(http.post).toHaveBeenCalledWith('/api/webhooks', { url: 'https://x', events: ['entry.published'], enabled: true })
+    const created = await wh.create({ name: 'Notify', url: 'https://x', triggers: [{ type: 'entry', action: 'published' }], enabled: true })
+    expect(http.post).toHaveBeenCalledWith('/api/webhooks', { name: 'Notify', url: 'https://x', triggers: [{ type: 'entry', action: 'published' }], enabled: true })
     expect(created).toEqual({ id: 'wh2' })
   })
 
