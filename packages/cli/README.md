@@ -47,6 +47,21 @@ architect types generate --output ./architect-types.ts
 | `architect entries push --model <name> <file>` | Upsert entries (entries with an `id` are updated; others created). |
 | `architect types generate [--output <file>]` | Generate TypeScript types for your models. |
 | `architect init [--config <file>] [--yes]` | Bootstrap a workspace: starter models, localization, bundles. |
+| `architect contexts list` | List context providers. |
+| `architect contexts get <id>` | Show one context provider. |
+| `architect contexts pull [--out <file>]` | Fetch all context providers as JSON. |
+| `architect contexts push <file>` | Create/update context providers from JSON. |
+| `architect context-actions list --provider <id>` | List context actions for a provider. |
+| `architect context-actions run <id> --entry <entryId> --context-value <value> [--model <modelId>]` | Execute a context action on an entry. |
+| `architect env list` | List environments. |
+| `architect env create --name <displayName> [--promotes-to <id>]` | Create an environment, optionally with a promotion target. |
+| `architect lifecycle list --model <name>` | List lifecycle functions for a model. |
+| `architect lifecycle add --model <name> --name <name> --events <list> --code-file <path> [--timing before\|after]` | Add a lifecycle function. |
+| `architect lifecycle rm <id>` | Remove a lifecycle function. |
+| `architect webhooks list` | List webhooks. |
+| `architect webhooks add --name <name> --url <url> --events <list>` | Add a webhook. |
+| `architect webhooks test <id>` | Send a test delivery. |
+| `architect webhooks rm <id>` | Delete a webhook. |
 
 Add `--json` to any command for machine-readable output.
 
@@ -65,6 +80,81 @@ See [`examples/init.fr-en.json`](./examples/init.fr-en.json) for the config shap
 - **Starter models** — created via the SDK.
 - **Localization** — a `Locale` context model (key field `code`), seeded locale entries, and a context provider. With `hierarchy: true`, region locales (`fr-FR`) fall back to their base language (`fr`) via a self-referencing `parent` relation. Resolution is most-specific-first (the Architect server has no configurable policy knob).
 - **Bundles** — installed into the target environment.
+
+## Context providers
+
+Context providers drive audience segmentation / data enrichment. Pull and push
+them as JSON, the same workflow as models and entries:
+
+```bash
+architect contexts list
+architect contexts get ctx_region
+architect contexts pull --out architect/contexts.json
+architect contexts push architect/contexts.json
+```
+
+## Context actions
+
+Operations bound to a provider (e.g. "translate to locale") that produce
+context-specific content for an entry:
+
+```bash
+# List the actions defined on a provider
+architect context-actions list --provider ctx_locale
+
+# Run an action against an entry under a given context value
+architect context-actions run action_translate \
+  --entry entry_123 \
+  --context-value fr-FR \
+  --model Article
+```
+
+## Environments
+
+```bash
+architect env list
+
+# Create an environment; --promotes-to wires a promotion target (staging → prod)
+architect env create --name Staging --promotes-to env_prod
+```
+
+## Lifecycle functions
+
+Server-side handlers that run before/after entry events. `--events` is a
+comma-separated list of `onCreate` / `onUpdate` / `onDelete`; `--timing` is
+`before` or `after` (default `after`; `onDelete` supports `after` only). The
+`--code-file` must define `function handler(entry, context, services)`.
+
+```bash
+architect lifecycle list --model Article
+
+# slug.js: function handler(entry, context, services) { … return { entry } }
+architect lifecycle add \
+  --model Article \
+  --name slugify \
+  --events onCreate,onUpdate \
+  --timing before \
+  --code-file ./slug.js
+
+architect lifecycle rm fn_123
+```
+
+## Webhooks
+
+`--events` is a comma-separated list of `object.action` pairs (e.g.
+`entry.published`, `model.updated`).
+
+```bash
+architect webhooks list
+
+architect webhooks add \
+  --name "Notify build" \
+  --url https://example.com/hooks/architect \
+  --events entry.published,entry.deleted
+
+architect webhooks test wh_123    # send a sample delivery
+architect webhooks rm wh_123
+```
 
 ## Configuration
 

@@ -1,6 +1,6 @@
 # @architectcms/sdk
 
-TypeScript SDK for [Architect CMS](https://github.com/your-org/architect) — delivery, preview, and management clients.
+TypeScript SDK for [Architect CMS](https://architectcms.com) — delivery, preview, and management clients.
 
 ## Installation
 
@@ -121,6 +121,7 @@ const client = new ArchitectManagement({
 const entry = await client.entries.create('blog-post', { title: 'Hello World' });
 await client.entries.update(entry.id, { title: 'Updated' });
 await client.entries.publish(entry.id);
+await client.entries.unpublish(entry.id);   // back to draft
 await client.entries.delete(entry.id);
 
 // Relationships
@@ -145,9 +146,104 @@ await client.assets.delete(asset.id);
 
 // Context Providers
 const contexts = await client.contexts.list();
+const ctx = await client.contexts.get('ctx_1');
 await client.contexts.create({ name: 'Region', sourceModelId: 'model_1' });
 await client.contexts.update(ctx.id, { name: 'Updated' });
 await client.contexts.delete(ctx.id);
+```
+
+The management client also exposes the platform resources below. All reads
+return plain arrays/objects (the `{ success, data }` envelope is unwrapped for
+you); deletes return `void`.
+
+### Environments
+
+```typescript
+const envs = await client.environments.list();
+const env = await client.environments.get('env_staging');
+
+// `promotesTo` wires a promotion target (e.g. staging → production)
+const staging = await client.environments.create({
+  displayName: 'Staging',
+  promotesTo: 'env_prod',
+});
+await client.environments.update(staging.id, { description: 'Pre-prod QA' });
+await client.environments.delete(staging.id);
+```
+
+### Lifecycle functions
+
+Server-side handlers that run before/after entry events. `events` is any of
+`onCreate` / `onUpdate` / `onDelete`; `onDelete` only supports `after` timing.
+`code` must define `function handler(entry, context, services)`.
+
+```typescript
+const fns = await client.lifecycle.list('blog-post');   // by model id/name
+const fn = await client.lifecycle.get('fn_123');
+
+const created = await client.lifecycle.create('blog-post', {
+  name: 'slugify',
+  events: ['onCreate', 'onUpdate'],
+  eventTiming: { onCreate: 'before', onUpdate: 'before' },
+  code: 'function handler(entry, context, services) { /* ... */ return { entry }; }',
+});
+await client.lifecycle.update(created.id, { enabled: false });
+await client.lifecycle.delete(created.id);
+```
+
+### Webhooks
+
+`triggers` are `{ type, action }` pairs (e.g. `entry` + `published`).
+
+```typescript
+const hooks = await client.webhooks.list();
+const hook = await client.webhooks.get('wh_123');
+
+const hook2 = await client.webhooks.create({
+  name: 'Notify build',
+  url: 'https://example.com/hooks/architect',
+  triggers: [
+    { type: 'entry', action: 'published' },
+    { type: 'entry', action: 'deleted' },
+  ],
+});
+await client.webhooks.test(hook2.id);    // send a sample delivery
+await client.webhooks.update(hook2.id, { enabled: false });
+await client.webhooks.delete(hook2.id);
+```
+
+### Context actions
+
+Operations bound to a context provider (e.g. "translate to locale") that
+produce context-specific content for an entry.
+
+```typescript
+const actions = await client.contextActions.list('ctx_provider_1');  // by provider id
+const action = await client.contextActions.get('action_123');
+
+const action2 = await client.contextActions.create('ctx_provider_1', {
+  name: 'Translate',
+  code: 'function handler(entry, context, services) { /* ... */ }',
+});
+await client.contextActions.update(action2.id, { enabled: true });
+
+// Run the action against an entry under a given context value
+const result = await client.contextActions.execute(action2.id, {
+  entryId: 'entry_123',
+  contextValue: 'fr-FR',
+  modelId: 'blog-post',
+});
+// result.modifiedEntry, result.executionTime
+
+await client.contextActions.delete(action2.id);
+```
+
+### Bundles
+
+```typescript
+const bundles = await client.bundles.list();
+// Installs into the client's org/environment (resolved from config server-side)
+await client.bundles.install('bundle_localization', { /* install options */ });
 ```
 
 ## Website Preview Integration
@@ -222,6 +318,34 @@ const posts = await client.entries.model<BlogPost>('blog-post').fetch();
 // posts[0].data.title -- fully typed
 ```
 
+## Query Builder
+
+`client.entries.model(modelId)` returns a chainable, immutable query. Each
+method returns a new query; nothing executes until you call `.fetch()`.
+
+```typescript
+const results = await client.entries
+  .model<BlogPost>('blog-post')
+  .where('category', 'technology')          // eq shorthand
+  .where('views', 'gte', 1000)              // explicit operator
+  .withContext('language', 'fr')            // context resolution
+  .limit(20)
+  .offset(40)                               // pagination (page 3 of 20)
+  .expandRelations(true)                    // resolve related entries (default)
+  .fetch();
+```
+
+| Method | Purpose |
+|--------|---------|
+| `.where(field, value)` | Filter, `eq` shorthand |
+| `.where(field, operator, value)` | Filter with an explicit [operator](#filter-operators) |
+| `.withContext(key, value)` | Add one context value for server-side resolution |
+| `.withContexts({ … })` | Add several context values at once |
+| `.limit(n)` | Cap the number of results |
+| `.offset(n)` | Skip `n` results (pagination) |
+| `.expandRelations(bool)` | Resolve related entries inline (default `true`) |
+| `.fetch()` | Execute the query → `Promise<Entry<T>[]>` |
+
 ## Filter Operators
 
 | Operator | Example | Description |
@@ -241,6 +365,32 @@ const posts = await client.entries.model<BlogPost>('blog-post').fetch();
   ```typescript
   const posts = await client.entries.model('blog-post').expandRelations(false).fetch();
   ```
+
+## API Reference
+
+Which resources each client exposes (✓ = available). `ArchitectPreview` and
+`ArchitectManagement` both extend `ArchitectDelivery`, so they inherit the read
+surface.
+
+| Resource | Methods | Delivery | Preview | Management |
+|----------|---------|:---:|:---:|:---:|
+| `entries` (read) | `get(id, context?)`, `model(id)` → query builder | ✓ | ✓ (incl. drafts) | ✓ |
+| `entries` (write) | `create`, `update`, `delete`, `publish`, `unpublish`, `addRelation`, `removeRelation` | — | — | ✓ |
+| `models` (read) | `list`, `get` | ✓ | ✓ | ✓ |
+| `models` (write) | `create`, `update`, `delete`, `addField`, `updateField`, `deleteField` | — | — | ✓ |
+| `assets` (read) | `get`, `imageUrl(id, transforms?)` | ✓ | ✓ | ✓ |
+| `assets` (write) | `upload`, `update`, `delete` | — | — | ✓ |
+| `contexts` | `list`, `get`, `create`, `update`, `delete` | — | — | ✓ |
+| `contextActions` | `list(providerId)`, `get`, `create(providerId, …)`, `update`, `delete`, `execute(id, params)` | — | — | ✓ |
+| `environments` | `list`, `get`, `create`, `update`, `delete` | — | — | ✓ |
+| `lifecycle` | `list(modelId)`, `get`, `create(modelId, …)`, `update`, `delete` | — | — | ✓ |
+| `webhooks` | `list`, `get`, `create`, `update`, `delete`, `test` | — | — | ✓ |
+| `bundles` | `list`, `install(id, options?)` | — | — | ✓ |
+
+Also exported: `generateTypes(models)` (see [Type Generation](#type-generation)),
+the `ArchitectError` error class, and TypeScript types for every resource
+(`Entry`, `Model`, `Field`, `Asset`, `ImageTransformOptions`, `ContextProvider`,
+`Bundle`, `Environment`, `LifecycleFunction`, `Webhook`, `ContextAction`, …).
 
 ## Requirements
 
