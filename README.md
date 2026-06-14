@@ -2,12 +2,13 @@
 
 The official TypeScript SDK and command-line tool for [Architect CMS](https://www.architectcms.com) — an AI-native platform to model, manage, and deliver any kind of content as one connected, context-aware graph.
 
-This is a public npm monorepo (npm workspaces) containing two packages:
+This is a public npm monorepo (npm workspaces) containing three packages:
 
 | Package | npm | What it is |
 | --- | --- | --- |
 | [`@architectcms/sdk`](./packages/sdk) | [![npm](https://img.shields.io/npm/v/@architectcms/sdk.svg)](https://www.npmjs.com/package/@architectcms/sdk) | TypeScript SDK: `ArchitectDelivery`, `ArchitectPreview`, and `ArchitectManagement` clients plus type generation. Zero runtime dependencies. |
 | [`@architectcms/cli`](./packages/cli) | [![npm](https://img.shields.io/npm/v/@architectcms/cli.svg)](https://www.npmjs.com/package/@architectcms/cli) | The `architect` command — a thin wrapper around the SDK for managing models, entries, and types from the terminal. |
+| [`@architectcms/mcp`](./packages/mcp) | [![npm](https://img.shields.io/npm/v/@architectcms/mcp.svg)](https://www.npmjs.com/package/@architectcms/mcp) | MCP server for Architect CMS — dynamically generates Model Context Protocol tools from your content models. Runs via `npx -y @architectcms/mcp`. |
 
 The CLI does **no direct HTTP** — every API call goes through `@architectcms/sdk`, and it authenticates with a management API key just like the SDK.
 
